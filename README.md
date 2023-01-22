@@ -94,3 +94,106 @@ Repositorio para a atividade de Linux, do programa de bolsas da Compass UOL.
     TCP personalizado | TCP | 2049 | 0.0.0.0/0 | NFS
     UDP personalizado | UDP | 2049 | 0.0.0.0/0 | NFS
 
+### Configurar o NFS.
+
+### Configurar o Apache.
+
+- Executar o comando `sudo yum update -y` para atualizar o sistema.
+- Executar o comando `sudo yum install httpd -y` para instalar o apache.
+- Executar o comando `sudo systemctl start httpd` para iniciar o apache.
+- Executar o comando `sudo systemctl enable httpd` para habilitar o apache para iniciar automaticamente.
+- Executar o comando `sudo systemctl status httpd` para verificar o status do apache.
+- Configurações adicionais do apache podem ser feitas no arquivo `/etc/httpd/conf/httpd.conf`.
+- para parar o apache, executar o comando `sudo systemctl stop httpd`.
+
+### Configurar o script de validação.
+
+- Crie um novo arquivo de script usando o comando "nano script.sh".
+- Adicione as seguintes linhas de código no arquivo de script:
+    ```bash
+    #!/bin/bash
+    # Script que verifica o status do serviço httpd e salva o resultado em um arquivo no diretório /mnt/nfs/alex
+    
+    DATA=$(date +%d/%m/%Y)
+    HORA=$(date +%H:%M:%S)
+    SERVICO="httpd"
+    STATUS=$(systemctl is-active $SERVICO)
+   
+    if [ $STATUS == "active" ]; then
+        MENSAGEM="O $SERVICO está ONLINE"
+        echo "$DATA $HORA - $SERVICO - active - $MENSAGEM" >> /mnt/nfs/alexlopes/online.txt
+    else
+        MENSAGEM="O $SERVICO está offline"
+        echo "$DATA $HORA - $SERVICO - inactive - $MENSAGEM" >> /mnt/nfs/alexlopes/offline.txt
+    fi
+    ```
+- Salve o arquivo de script.
+- Execute o comando `chmod +x script.sh` para tornar o arquivo de script executável.
+- Execute o comando `./script.sh` para executar o script.
+
+### Configurar a execução do script de validação a cada 5 minutos.
+
+#### Escolha uma das formas a seguir:
+<details>
+<summary>Usando o crontab</summary>
+
+- Execute o comando `crontab -e` para editar o cronjob.
+- Adicione a seguinte linha de código no arquivo de cronjob:
+    ```bash
+    */5 * * * * /home/ec2-user/script.sh
+    ```
+- Salve o arquivo de cronjob.
+- Execute o comando `crontab -l` para verificar se o cronjob foi configurado corretamente.
+
+</details>
+
+<details>
+<summary>Usando o systemd</summary>
+
+### Configurar o serviço systemd.
+- Crie um novo arquivo de serviço usando o comando `sudo nano /etc/systemd/system/validate_apache.service`.
+- Adicione as seguintes linhas de código no arquivo de serviço:
+    ```bash
+    [Unit]
+    Description=Validate apache service
+    
+    [Service]
+    Type=simple
+    ExecStart=/home/ec2-user/script.sh
+    Restart=on-failure
+    RestartSec=5
+    
+    [Install]
+    WantedBy=multi-user.target
+    ```
+- Salve o arquivo de serviço.
+- Execute o comando `sudo systemctl daemon-reload` para recarregar o systemd.
+- Execute o comando `sudo systemctl start validate_apache` para iniciar o serviço.
+- Execute o comando `sudo systemctl enable validate_apache` para habilitar o serviço para iniciar automaticamente.
+- Execute o comando `sudo systemctl status validate_apache` para verificar o status do serviço.
+
+### Configurar o timer systemd.
+- Crie um novo arquivo de timer usando o comando `sudo nano /etc/systemd/system/validate_apache.timer`.
+- Adicione as seguintes linhas de código no arquivo de timer:
+    ```bash
+    [Unit]
+    Description=Validate apache timer
+    
+    [Timer]
+    OnBootSec=5min
+    OnUnitActiveSec=5min
+    Unit=validate_apache.service
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+- Salve o arquivo de timer.
+- Execute o comando `sudo systemctl daemon-reload` para recarregar o systemd.
+- Execute o comando `sudo systemctl start validate_apache.timer` para iniciar o timer.
+- Execute o comando `sudo systemctl enable validate_apache.timer` para habilitar o timer para iniciar automaticamente.
+- Execute o comando `sudo systemctl status validate_apache.timer` para verificar o status do timer.
+
+</details>
+
+
+
