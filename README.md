@@ -135,7 +135,7 @@ Repositorio para a atividade de Linux, do programa de bolsas da Compass UOL.
 
 #### Escolha uma das formas a seguir:
 <details>
-<summary>Usando o crontab</summary>
+<summary>Usando o crontab (mais simples)</summary>
 
 - Execute o comando `crontab -e` para editar o cronjob.
 - Adicione a seguinte linha de código no arquivo de cronjob:
@@ -148,7 +148,7 @@ Repositorio para a atividade de Linux, do programa de bolsas da Compass UOL.
 </details>
 
 <details>
-<summary>Usando o systemd</summary>
+<summary>Usando o systemd (mais complexo)</summary>
 
 ### Configurar o serviço systemd.
 - Crie um novo arquivo de serviço usando o comando `sudo nano /etc/systemd/system/validate_apache.service`.
