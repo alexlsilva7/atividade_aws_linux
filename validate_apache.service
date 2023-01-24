@@ -3,7 +3,7 @@ Description=Validate apache service
 
 [Service]
 Type=simple
-ExecStart=/home/ec2-user/script.sh
+ExecStart=/atividade_aws_linux/script_verifica_apache.sh
 Restart=on-failure
 RestartSec=5
 
