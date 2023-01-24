@@ -1,0 +1,10 @@
+[Unit]
+Description=Validate apache timer
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+Unit=validate_apache.service
+
+[Install]
+WantedBy=multi-user.target
