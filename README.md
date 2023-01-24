@@ -45,7 +45,7 @@ Repositorio para a atividade de Linux, do programa de bolsas da Compass UOL.
 - Salvar o arquivo .pem gerado em um local seguro.
 - Clicar em "Instâncias" no menu lateral esquerdo.
 - Clicar em "Executar instâncias".
-- Configurar as Tags da instância (Name, Project e CostCenter).
+- Configurar as Tags da instância (Name, Project e CostCenter) para instâncias e volumes.
 - Selecionar a imagem Amazon Linux 2 AMI (HVM), SSD Volume Type.
 - Selecionar o tipo de instância t3.small.
 - Selecionar a chave gerada anteriormente.
@@ -94,7 +94,18 @@ Repositorio para a atividade de Linux, do programa de bolsas da Compass UOL.
     TCP personalizado | TCP | 2049 | 0.0.0.0/0 | NFS
     UDP personalizado | UDP | 2049 | 0.0.0.0/0 | NFS
 
-### Configurar o NFS.
+### Configurar o NFS com o IP fornecido
+
+- Criar um novo diretório para o NFS usando o comando `sudo mkdir /mnt/nfs`.
+- Montar o NFS no diretório criado usando o comando `sudo mount IP_OU_DNS_DO_NFS:/ /mnt/nfs`.
+- Verificar se o NFS foi montado usando o comando `df -h`.
+- Configurar o NFS para montar automaticamente no boot usando o comando `sudo nano /etc/fstab`.
+- Adicionar a seguinte linha no arquivo `/etc/fstab`:
+    ```
+    IP_OU_DNS_DO_NFS:/ /mnt/nfs nfs defaults 0 0
+    ```
+- Salvar o arquivo `/etc/fstab`.
+- Criar um novo diretório para o usuário alexlopes usando o comando `sudo mkdir /mnt/nfs/alexlopes`.
 
 ### Configurar o Apache.
 
@@ -136,6 +147,8 @@ Repositorio para a atividade de Linux, do programa de bolsas da Compass UOL.
 #### Escolha uma das formas a seguir:
 <details>
 <summary>Usando o crontab (mais simples)</summary>
+
+### Configurar o cronjob.
 
 - Execute o comando `crontab -e` para editar o cronjob.
 - Adicione a seguinte linha de código no arquivo de cronjob:
@@ -195,5 +208,34 @@ Repositorio para a atividade de Linux, do programa de bolsas da Compass UOL.
 
 </details>
 
+### Exemplo de user data para criação de instância EC2.
 
+```bash
+#!/bin/bash
+timedatectl set-timezone America/Sao_Paulo
+yum update -y
+yum install -y git
+cd /
+git clone https://github.com/alexlsilva7/atividade_aws_linux.git
 
+#NFS
+mkdir -p /mnt/nfs
+sudo mount IP_OU_DNS_DO_NFS:/ /mnt/nfs
+echo "IP_OU_DNS_DO_NFS:/ /mnt/nfs nfs defaults 0 0" >> /etc/fstab
+
+# Apache
+sudo yum install -y httpd
+sudo systemctl start httpd
+sudo systemctl enable httpd
+
+# Configurar Script pelo systemd
+sudo cp /atividade_aws_linux/validate_apache.service /etc/systemd/system/
+sudo cp /atividade_aws_linux/validate_apache.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl start validate_apache
+sudo systemctl enable validate_apache
+sudo systemctl start validate_apache.timer
+sudo systemctl enable validate_apache.timer
+```
+
+- Substituir o IP_OU_DNS_DO_NFS pelo IP ou DNS do servidor NFS.
